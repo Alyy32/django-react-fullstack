@@ -148,3 +148,34 @@ CORS_ALLOW_ALL_ORIGINS = True  # Only for development!
 
 # Disable automatic slash appending for API consistency
 APPEND_SLASH = False
+
+# Redis Configuration (with fallback to local memory for development)
+CACHES = {
+    'default': {
+        # Try Redis first, fallback to locmem if Redis server not available
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+            'CULL_FREQUENCY': 3,
+        }
+    }
+}
+
+# To use Redis when available, uncomment below and comment above:
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379/1',
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         }
+#     }
+# }
+
+# Session configuration with cache
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
+# Cache time to live is 300 seconds (5 minutes)
+CACHE_TTL = 60 * 5

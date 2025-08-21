@@ -26,18 +26,14 @@ const apiService = {
 
 interface ApiStatus {
   status: string
-  message: string
-  database: string
-  apps: string[]
+  version: string
+  django_version: string
 }
 
 interface HelloResponse {
   message: string
   status: string
-  data: {
-    app: string
-    version: string
-  }
+  timestamp: string
 }
 
 export default function Home() {
@@ -51,7 +47,7 @@ export default function Home() {
       try {
         setLoading(true)
         
-        // Test both API endpoints
+        // Fetch API endpoints
         const [statusResponse, helloResponse] = await Promise.all([
           apiService.get('/status/'),
           apiService.get('/hello/')
@@ -176,25 +172,12 @@ export default function Home() {
                   <span className="text-green-600 font-semibold">{apiStatus.status}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium">Database:</span>
-                  <span className="text-green-600 font-semibold">{apiStatus.database}</span>
+                  <span className="font-medium">Version:</span>
+                  <span className="text-gray-700">{apiStatus.version}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium">Message:</span>
-                  <span className="text-gray-700">{apiStatus.message}</span>
-                </div>
-                <div className="pt-2">
-                  <span className="font-medium">Apps:</span>
-                  <div className="mt-1">
-                    {apiStatus.apps.map((app, index) => (
-                      <span 
-                        key={index} 
-                        className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm mr-2"
-                      >
-                        {app}
-                      </span>
-                    ))}
-                  </div>
+                  <span className="font-medium">Django Version:</span>
+                  <span className="text-gray-700">{apiStatus.django_version}</span>
                 </div>
               </div>
             )}
@@ -217,12 +200,8 @@ export default function Home() {
                   <span className="text-green-600 font-semibold">{helloData.status}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium">App:</span>
-                  <span className="text-gray-700">{helloData.data.app}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Version:</span>
-                  <span className="text-gray-700">{helloData.data.version}</span>
+                  <span className="font-medium">Timestamp:</span>
+                  <span className="text-gray-700">{helloData.timestamp}</span>
                 </div>
               </div>
             )}
