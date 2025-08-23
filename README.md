@@ -4,9 +4,10 @@
 [![Django](https://img.shields.io/badge/Django-5.0.7-green.svg)](https://djangoproject.com)
 [![Next.js](https://img.shields.io/badge/Next.js-15.4.7-black.svg)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://typescriptlang.org)
+[![Redis](https://img.shields.io/badge/Redis-Cache-red.svg)](https://redis.io)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A **production-ready** full-stack web application featuring a robust Django REST API backend with comprehensive authentication, user management, and a modern Next.js frontend with TypeScript and responsive design.
+A **production-ready** full-stack web application featuring a modular Django REST API backend with comprehensive authentication, user management system with role-based models (Students, Parents, Instructors), Redis caching, and a modern Next.js frontend with TypeScript and responsive design.
 
 ## 📋 Table of Contents
 
@@ -24,18 +25,23 @@ A **production-ready** full-stack web application featuring a robust Django REST
 
 ## 🎯 Features
 
-### Backend Features
+### 🔧 Backend Features
+- ✅ **Modular Django Apps** - Separated concerns with dedicated apps
 - ✅ **RESTful API** with Django REST Framework
-- ✅ **Authentication System** (Login, Signup, Profile Management)
-- ✅ **Database Models** with relationships and constraints
-- ✅ **Admin Dashboard** with custom branding
-- ✅ **API Logging** and request monitoring
+- ✅ **User Management System** with role-based models:
+  - 👨‍🎓 **Student Model** - Academic records, enrollment, GPA tracking
+  - 👨‍👩‍👦 **Parent Model** - Guardian information, contact details
+  - 👨‍🏫 **Instructor Model** - Teaching credentials, departments, experience
+- ✅ **Authentication System** (Login, Signup, Password Management)
+- ✅ **Models Package Structure** - Organized in separate files for maintainability
+- ✅ **Admin Dashboard** with custom configurations for each model
+- ✅ **Redis Caching** with comprehensive utilities and fallback support
+- ✅ **API Endpoints** for each user type with detailed views
 - ✅ **CORS Configuration** for frontend integration
-- ✅ **Redis Caching** support with fallback
 - ✅ **Data Validation** and error handling
-- ✅ **Security Best Practices** implemented
+- ✅ **Backward Compatibility** with proxy models
 
-### Frontend Features
+### 🎨 Frontend Features
 - ✅ **Modern UI/UX** with Tailwind CSS
 - ✅ **TypeScript** for type safety and better development experience
 - ✅ **Responsive Design** across all devices
@@ -47,7 +53,123 @@ A **production-ready** full-stack web application featuring a robust Django REST
 
 ## 🏗️ Architecture
 
-This application follows a **microservices-inspired architecture** with clear separation of concerns:
+This application follows a **microservices-inspired architecture** with clear separation of concerns and modular Django apps:
+
+```mermaid
+graph TB
+    A[Next.js Frontend] -->|HTTP/REST API| B[Django Backend]
+    B --> C[SQLite Database]
+    B --> D[Redis Cache]
+    B --> E[Django Admin]
+    
+    subgraph "Frontend Layer"
+        A
+        F[TypeScript]
+        G[Tailwind CSS]
+        H[React Components]
+    end
+    
+    subgraph "Backend Layer - Modular Apps"
+        B
+        I[core.authentication - Auth Endpoints]
+        J[core.user - User Models Package]
+        K[core.redis_demo - Cache Management]
+        L[Django REST Framework]
+    end
+    
+    subgraph "Models Package Structure"
+        M[Student Model]
+        N[Parent Model] 
+        O[Instructor Model]
+        P[UserProfile Proxy]
+    end
+    
+    subgraph "Data Layer"
+        C
+        D
+        Q[Model Relationships]
+        R[Migrations]
+    end
+```
+
+## 🗃️ Database Design
+
+### 📊 Enhanced Entity Relationship Diagram
+
+```sql
+-- Core Django Tables
+auth_user (Django Built-in)
+├── id (Primary Key)
+├── username (Unique)
+├── email
+├── password (Hashed)
+└── date_joined
+
+-- User Management Models Package
+user_parent (Parent/Guardian Model)
+├── id (Primary Key)
+├── user_id (Foreign Key → auth_user.id)
+├── phone_number (Validated)
+├── birth_date
+├── bio
+├── avatar (URL)
+├── occupation
+├── emergency_contact
+├── address
+├── created_at
+└── updated_at
+
+user_student (Student Model)
+├── id (Primary Key)
+├── user_id (Foreign Key → auth_user.id)
+├── phone_number (Validated)
+├── birth_date
+├── bio
+├── avatar (URL)
+├── student_id (Unique)
+├── grade_level
+├── enrollment_date
+├── graduation_year
+├── gpa (Decimal, 0.0-4.0)
+├── major
+├── parent_id (Foreign Key → user_parent.id)
+├── created_at
+└── updated_at
+
+user_instructor (Instructor Model)
+├── id (Primary Key)
+├── user_id (Foreign Key → auth_user.id)
+├── phone_number (Validated)
+├── birth_date
+├── bio
+├── avatar (URL)
+├── employee_id (Unique)
+├── department
+├── specialization
+├── hire_date
+├── office_location
+├── office_hours
+├── qualification
+├── years_experience
+├── created_at
+└── updated_at
+```
+
+### 🔗 Model Relationships
+
+```python
+# Parent → Children relationship
+Parent.children (ForeignKey reverse)
+└── Student.parent (ForeignKey to Parent)
+
+# User → Profile relationship (OneToOne for each type)
+User.parent_profile → Parent
+User.student_profile → Student  
+User.instructor_profile → Instructor
+
+# Backward Compatibility
+UserProfile (Proxy Model) → Parent
+```
 
 ```mermaid
 graph TB
@@ -188,16 +310,104 @@ SESSION_COOKIE_AGE = 86400  # 24 hours
 ```
 wisecool_parent/                    # 🏠 Root Directory
 │
-├── 🐍 Backend (Django)
+├── 🐍 Backend (Django) - Modular Architecture
 │   ├── core/                       # 📦 Main Application Package
-│   │   └── parent/                 # 🎯 Core Business Logic
-│   │       ├── migrations/         # 🔄 Database Migrations
-│   │       ├── models.py          # 🗃️ Data Models (UserProfile, APILog)
-│   │       ├── views.py           # 🎭 API Views & Business Logic
-│   │       ├── urls.py            # 🛣️ URL Routing Patterns
-│   │       ├── admin.py           # 👑 Admin Interface Configuration
-│   │       ├── apps.py            # ⚙️ App Configuration
-│   │       └── redis_utils.py     # 🚀 Redis Cache Utilities
+│   │   ├── authentication/         # 🔐 Authentication Module
+│   │   │   ├── views.py            # 🔑 Auth Endpoints (signin, signup, signout)
+│   │   │   ├── urls.py             # 🛣️ Auth URL Patterns
+│   │   │   └── apps.py             # ⚙️ Auth App Configuration
+│   │   │
+│   │   ├── user/                   # 👥 User Management Module
+│   │   │   ├── models/             # 📋 Models Package Structure
+│   │   │   │   ├── __init__.py     # 📦 Package Imports
+│   │   │   │   ├── student.py      # 👨‍🎓 Student Model & Logic
+│   │   │   │   ├── parent.py       # 👨‍👩‍👦 Parent Model & Logic
+│   │   │   │   └── instructor.py   # 👨‍🏫 Instructor Model & Logic
+│   │   │   ├── migrations/         # 🔄 Database Migrations
+│   │   │   ├── views.py            # 🎭 User API Views & Endpoints
+│   │   │   ├── urls.py             # �️ User URL Patterns
+│   │   │   ├── admin.py            # 👑 Admin Interface for All Models
+│   │   │   └── apps.py             # ⚙️ User App Configuration
+│   │   │
+│   │   ├── redis_demo/             # 🚀 Redis Caching Module  
+│   │   │   ├── views.py            # 📊 Cache Demo Endpoints
+│   │   │   ├── urls.py             # 🛣️ Redis URL Patterns
+│   │   │   └── apps.py             # ⚙️ Redis App Configuration
+│   │   │
+│   │   ├── api_views.py            # � Shared API Endpoints
+│   │   └── redis_utils.py          # 🔧 Redis Utility Functions
+│   │
+│   ├── root/                       # 🔧 Django Project Configuration
+│   │   ├── settings.py             # ⚙️ Project Settings & App Registration
+│   │   ├── urls.py                 # 🌐 Root URL Configuration
+│   │   ├── wsgi.py                 # 🚀 WSGI Production Server
+│   │   └── asgi.py                 # ⚡ ASGI Async Server
+│   │
+│   ├── manage.py                   # 🎮 Django Management Commands
+│   └── db.sqlite3                  # 💾 SQLite Database File
+│
+├── 🎨 Frontend (Next.js)
+│   ├── src/                        # 📁 Source Code Directory
+│   │   ├── app/                    # 📄 App Router Pages
+│   │   │   ├── login/              # 🔐 User Authentication Page
+│   │   │   ├── signup/             # 📝 User Registration Page
+│   │   │   ├── dashboard/          # 📊 User Dashboard
+│   │   │   ├── globals.css         # 🎨 Global Styles
+│   │   │   ├── layout.tsx          # 🏗️ App Layout Component
+│   │   │   └── page.tsx            # 🏠 Homepage Component
+│   │   │
+│   │   ├── components/             # 🧩 Reusable React Components
+│   │   └── services/               # 🔌 API Service Layer
+│   │
+│   ├── package.json                # � Node.js Dependencies
+│   ├── tailwind.config.ts          # 🎨 Tailwind CSS Configuration
+│   ├── tsconfig.json               # 📘 TypeScript Configuration
+│   └── next.config.js              # ⚙️ Next.js Configuration
+│
+├── 🔒 Environment & Config
+│   ├── .gitignore                  # 🚫 Git Ignore Rules
+│   ├── .env.example                # 📋 Environment Variables Template
+│   ├── requirements.txt            # 📋 Python Dependencies
+│   └── .pylintrc                   # 🔍 Code Quality Configuration
+│
+└── 📚 Documentation
+    ├── README.md                   # 📖 Project Documentation (This File)
+    └── redis_demo.html             # 🚀 Redis Endpoints Demo Page
+```
+
+### 🎯 Enhanced Directory Explanation
+
+| Directory | Purpose | Key Features | Technologies |
+|-----------|---------|-------------|-------------|
+| `core/authentication/` | User authentication and security | Signin, signup, password management | Django, DRF, JWT |
+| `core/user/models/` | Modular user models package | Student, Parent, Instructor models | Django Models, Validation |
+| `core/user/` | User management and profiles | CRUD operations, relationships | Django, DRF |
+| `core/redis_demo/` | Caching and performance | Cache stats, demo endpoints | Redis, Django Cache |
+| `core/` | Shared utilities and views | Common API endpoints, Redis utils | Django, Redis |
+| `root/` | Django project configuration | Settings, URL routing, WSGI | Django Settings |
+| `frontend/src/app/` | Next.js pages using App Router | Modern routing, layouts | React, TypeScript |
+| `frontend/src/components/` | Reusable UI components | Modular design system | React, Tailwind CSS |
+| `frontend/src/services/` | API integration services | HTTP client, error handling | Axios, TypeScript |
+
+### � App Registration
+
+The Django project now uses a modular app structure registered in `settings.py`:
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'rest_framework',
+    'corsheaders',
+    'core.authentication',    # 🔐 Authentication endpoints
+    'core.user',             # 👥 User management with models package
+    'core.redis_demo',       # 🚀 Redis caching demonstrations
+]
+```
 │   │
 │   ├── root/                      # 🔧 Django Project Configuration
 │   │   ├── settings.py           # ⚙️ Project Settings & Configuration
@@ -264,7 +474,7 @@ wisecool_parent/                    # 🏠 Root Directory
 
 Get the application running in **under 5 minutes**:
 
-### 🐍 Backend Setup (2 minutes)
+### 🐍 Backend Setup (3 minutes)
 
 ```bash
 # 1. Clone and navigate to project
@@ -277,10 +487,15 @@ venv\Scripts\activate  # Windows
 
 # 3. Install dependencies and setup database
 pip install -r requirements.txt
+
+# 4. Create and run migrations for new modular structure
+python manage.py makemigrations user
 python manage.py migrate
+
+# 5. Create admin account
 python manage.py createsuperuser  # Create admin account
 
-# 4. Start Django server
+# 6. Start Django server
 python manage.py runserver
 # ✅ Backend running at http://localhost:8000
 ```
@@ -297,16 +512,20 @@ npm run dev
 # ✅ Frontend running at http://localhost:3000
 ```
 
-### 🎉 Access Points
+### 🎉 Enhanced Access Points
 
-| Service | URL | Description |
-|---------|-----|-------------|
-| 🏠 **Frontend** | http://localhost:3000 | Main application |
-| 🔌 **API** | http://localhost:8000/api/ | REST API endpoints |
-| 👑 **Admin** | http://localhost:8000/admin/ | Django admin panel |
-| 🔐 **Login** | http://localhost:3000/login | User authentication |
-| 📝 **Signup** | http://localhost:3000/signup | User registration |
-| 📊 **Dashboard** | http://localhost:3000/dashboard | User dashboard |
+| Service | URL | Description | New Features |
+|---------|-----|-------------|-------------|
+| 🏠 **Frontend** | http://localhost:3000 | Main application | React + TypeScript |
+| 🔌 **API Root** | http://localhost:8000/api/ | REST API endpoints | Modular structure |
+| 👑 **Admin** | http://localhost:8000/admin/ | Django admin panel | Multi-model management |
+| 🔐 **Authentication** | http://localhost:8000/api/auth/ | Auth endpoints | Signin, signup, passwords |
+| 👥 **User Management** | http://localhost:8000/api/user/ | User models API | Students, Parents, Instructors |
+| 🚀 **Redis Demo** | http://localhost:8000/api/redis/ | Cache endpoints | Performance demonstration |
+| 📊 **Cache Stats** | http://localhost:8000/api/redis/stats/ | Redis statistics | Real-time cache monitoring |
+| 🔐 **Login Page** | http://localhost:3000/login | User authentication | Frontend form |
+| 📝 **Signup Page** | http://localhost:3000/signup | User registration | Frontend form |
+| 📊 **Dashboard** | http://localhost:3000/dashboard | User dashboard | Profile management |
 
 ## 🔧 Installation
 
@@ -446,32 +665,61 @@ npm start
 
 ## 🌐 API Documentation
 
-### 📊 API Overview
+### 📊 Enhanced API Overview
 
-Our REST API follows **RESTful principles** and provides comprehensive endpoints for user management and authentication.
+Our **modular REST API** follows RESTful principles with organized endpoints across dedicated Django apps for authentication, user management, and caching.
 
 **Base URL:** `http://localhost:8000/api/`  
 **Authentication:** Session-based with CSRF protection  
 **Content-Type:** `application/json`  
 **Response Format:** JSON with consistent error handling
 
-### 🔗 Endpoint Reference
+### 🔗 Complete Endpoint Reference
+
+#### 🔐 Authentication Endpoints (`/api/auth/`)
 
 | Method | Endpoint | Description | Auth Required | Request Body |
 |--------|----------|-------------|---------------|--------------|
-| ![GET](https://img.shields.io/badge/GET-blue) | `/api/hello/` | Health check endpoint | ❌ | None |
-| ![GET](https://img.shields.io/badge/GET-blue) | `/api/status/` | API status and database info | ❌ | None |
-| ![POST](https://img.shields.io/badge/POST-green) | `/api/auth/login/` | User authentication | ❌ | `{username, password}` |
-| ![POST](https://img.shields.io/badge/POST-green) | `/api/auth/signup/` | User registration | ❌ | `{username, email, password}` |
-| ![POST](https://img.shields.io/badge/POST-orange) | `/api/auth/logout/` | User logout | ✅ | None |
-| ![GET](https://img.shields.io/badge/GET-blue) | `/api/auth/profile/` | Get user profile | ✅ | None |
+| ![GET](https://img.shields.io/badge/GET-blue) | `/api/auth/signin/` | Sign in form info | ❌ | None |
+| ![POST](https://img.shields.io/badge/POST-green) | `/api/auth/signin/` | User authentication | ❌ | `{username, password}` |
+| ![GET](https://img.shields.io/badge/GET-blue) | `/api/auth/signup/` | Sign up form info | ❌ | None |
+| ![POST](https://img.shields.io/badge/POST-green) | `/api/auth/signup/` | User registration | ❌ | `{name, email, password}` |
+| ![POST](https://img.shields.io/badge/POST-orange) | `/api/auth/signout/` | User logout | ✅ | None |
 | ![POST](https://img.shields.io/badge/POST-green) | `/api/auth/forgot-password/` | Password reset request | ❌ | `{email}` |
+| ![POST](https://img.shields.io/badge/POST-green) | `/api/auth/change-password/` | Change user password | ✅ | `{current_password, new_password}` |
 
-### 📝 Request/Response Examples
+#### 👥 User Management Endpoints (`/api/user/`)
 
-#### 🔐 User Authentication
+| Method | Endpoint | Description | Auth Required | Response Data |
+|--------|----------|-------------|---------------|---------------|
+| ![GET](https://img.shields.io/badge/GET-blue) | `/api/user/profile/` | Get current user profile | ✅ | User profile data |
+| ![GET](https://img.shields.io/badge/GET-blue) | `/api/user/demo/` | User model demonstration | ✅ | Statistics & examples |
+| ![GET](https://img.shields.io/badge/GET-blue) | `/api/user/students/` | List all students | ✅ | Student records with academic info |
+| ![GET](https://img.shields.io/badge/GET-blue) | `/api/user/parents/` | List all parents | ✅ | Parent records with contact info |
+| ![GET](https://img.shields.io/badge/GET-blue) | `/api/user/instructors/` | List all instructors | ✅ | Instructor records with credentials |
+| ![GET](https://img.shields.io/badge/GET-blue) | `/api/user/summary/` | Models package structure | ❌ | Package documentation |
 
-**POST `/api/auth/login/`**
+#### 🚀 Redis Caching Endpoints (`/api/redis/`)
+
+| Method | Endpoint | Description | Auth Required | Purpose |
+|--------|----------|-------------|---------------|---------|
+| ![GET](https://img.shields.io/badge/GET-blue) | `/api/redis/` | Cache demo (retrieve) | ❌ | Demonstrate cache retrieval |
+| ![POST](https://img.shields.io/badge/POST-green) | `/api/redis/` | Cache demo (store) | ❌ | Store custom cache data |
+| ![GET](https://img.shields.io/badge/GET-blue) | `/api/redis/stats/` | Cache statistics | ❌ | Cache status & sample data |
+| ![DELETE](https://img.shields.io/badge/DELETE-red) | `/api/redis/clear/` | Clear cache keys | ❌ | Cache management |
+
+#### 🌐 General API Endpoints
+
+| Method | Endpoint | Description | Auth Required | Purpose |
+|--------|----------|-------------|---------------|---------|
+| ![GET](https://img.shields.io/badge/GET-blue) | `/api/hello/` | Health check endpoint | ❌ | API connectivity test |
+| ![GET](https://img.shields.io/badge/GET-blue) | `/api/status/` | API status information | ❌ | Version & system status |
+
+### 📝 Enhanced Request/Response Examples
+
+#### 🔐 User Authentication (Modular Auth App)
+
+**POST `/api/auth/signin/`**
 ```json
 // Request
 {
@@ -481,8 +729,7 @@ Our REST API follows **RESTful principles** and provides comprehensive endpoints
 
 // Success Response (200)
 {
-  "status": "success",
-  "message": "Login successful",
+  "message": "Sign in successful",
   "user": {
     "id": 1,
     "username": "john_doe",
@@ -494,50 +741,115 @@ Our REST API follows **RESTful principles** and provides comprehensive endpoints
 
 // Error Response (401)
 {
-  "status": "error",
-  "message": "Invalid credentials",
-  "errors": {
-    "non_field_errors": ["Invalid username or password"]
-  }
+  "error": "Invalid credentials"
 }
 ```
 
-#### 📝 User Registration
+#### 👨‍🎓 Student Data (User Management App)
 
-**POST `/api/auth/signup/`**
-```json
-// Request
-{
-  "username": "jane_smith",
-  "email": "jane@example.com",
-  "password": "securepassword123",
-  "first_name": "Jane",
-  "last_name": "Smith"
-}
-
-// Success Response (201)
-{
-  "status": "success",
-  "message": "User created successfully",
-  "user": {
-    "id": 2,
-    "username": "jane_smith",
-    "email": "jane@example.com",
-    "first_name": "Jane",
-    "last_name": "Smith"
-  }
-}
-```
-
-#### 👤 User Profile
-
-**GET `/api/auth/profile/`**
+**GET `/api/user/students/`**
 ```json
 // Success Response (200)
 {
-  "status": "success",
-  "user": {
-    "id": 1,
+  "students": [
+    {
+      "id": 1,
+      "user": {
+        "username": "student1",
+        "first_name": "Alice",
+        "last_name": "Johnson",
+        "email": "alice@university.edu"
+      },
+      "student_id": "STU2024001",
+      "grade_level": "Junior",
+      "gpa": "3.75",
+      "major": "Computer Science",
+      "enrollment_date": "2022-09-01"
+    }
+  ],
+  "count": 1
+}
+```
+
+#### 👨‍👩‍� Parent Data (User Management App)
+
+**GET `/api/user/parents/`**
+```json
+// Success Response (200)
+{
+  "parents": [
+    {
+      "id": 1,
+      "user": {
+        "username": "parent1",
+        "first_name": "Robert",
+        "last_name": "Johnson",
+        "email": "robert@email.com"
+      },
+      "phone_number": "+1234567890",
+      "occupation": "Software Engineer",
+      "address": "123 Main St, City, State",
+      "children_count": 2
+    }
+  ],
+  "count": 1
+}
+```
+
+#### 👨‍🏫 Instructor Data (User Management App)
+
+**GET `/api/user/instructors/`**
+```json
+// Success Response (200)
+{
+  "instructors": [
+    {
+      "id": 1,
+      "user": {
+        "username": "prof_smith",
+        "first_name": "Dr. Sarah",
+        "last_name": "Smith",
+        "email": "s.smith@university.edu"
+      },
+      "employee_id": "EMP2020045",
+      "department": "Computer Science",
+      "specialization": "Machine Learning",
+      "office_location": "Science Building 301",
+      "years_experience": 8
+    }
+  ],
+  "count": 1
+}
+```
+
+#### � Redis Cache Demo (Caching App)
+
+**GET `/api/redis/stats/`**
+```json
+// Success Response (200)
+{
+  "message": "Redis cache statistics",
+  "cache_stats": {
+    "cache_backend": "Redis",
+    "cache_location": "redis://127.0.0.1:6379/1",
+    "status": "Connected",
+    "connection_test": "Passed"
+  },
+  "sample_cached_data": {
+    "demo_data": {
+      "timestamp": "2025-08-23T18:17:34.123456",
+      "message": "This is expensive data that should be cached",
+      "computation_result": 499500,
+      "user_count": 5
+    }
+  },
+  "cache_examples": {
+    "set_data": "POST /api/redis/ with {\"key\": \"mykey\", \"value\": \"myvalue\"}",
+    "get_data": "GET /api/redis/ (automatically caches demo data)",
+    "clear_cache": "DELETE /api/redis/clear/"
+  }
+}
+```
     "username": "john_doe",
     "email": "john@example.com",
     "first_name": "John",

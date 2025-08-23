@@ -20,7 +20,7 @@ from core import api_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', include('core.auth.urls')),
+    path('api/auth/', include('core.authentication.urls')),
     path('api/user/', include('core.user.urls')),
     path('api/redis/', include('core.redis_demo.urls')),
     path('api/hello/', api_views.hello_world, name='hello_world'),
