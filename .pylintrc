@@ -1,0 +1,9 @@
+[MAIN]
+load-plugins=pylint_django
+django-settings-module=root.settings
+
+[MESSAGES CONTROL]
+disable=C0114,C0115,C0116,E1101
+
+[TYPECHECK]
+generated-members=REQUEST,acl_users,aq_parent,objects,DoesNotExist,id,pk,_meta,base_fields,context

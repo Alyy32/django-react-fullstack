@@ -1,6 +1,7 @@
 from django.apps import AppConfig
 
 
-class ParentConfig(AppConfig):
+class UserConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'core.parent'
+    name = 'core.user'
+    verbose_name = 'User Management'

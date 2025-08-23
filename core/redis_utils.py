@@ -3,7 +3,6 @@ Redis utilities for caching and data storage
 """
 from django.core.cache import cache
 from django.conf import settings
-import json
 from datetime import datetime, timedelta
 
 class RedisHelper:
@@ -78,8 +77,11 @@ class RedisHelper:
         Increment a counter in Redis (useful for API rate limiting, etc.)
         """
         try:
-            return cache.get_or_set(key, 0) + amount
-        except:
+            current_value = cache.get(key, 0)
+            new_value = current_value + amount
+            cache.set(key, new_value, 3600)  # 1 hour default
+            return new_value
+        except (ValueError, TypeError):
             cache.set(key, amount, 3600)  # 1 hour default
             return amount
     
@@ -89,16 +91,29 @@ class RedisHelper:
         Get basic cache statistics (if available)
         """
         try:
-            # This is a simplified version - in real Redis you'd use INFO command
+            # Test cache connection
+            cache.set('_test_key', 'test', 1)
+            test_result = cache.get('_test_key')
+            cache.delete('_test_key')
+            
+            if test_result == 'test':
+                return {
+                    'cache_backend': 'Redis',
+                    'cache_location': getattr(settings, 'CACHES', {}).get('default', {}).get('LOCATION', 'Unknown'),
+                    'status': 'Connected',
+                    'connection_test': 'Passed'
+                }
+            else:
+                return {
+                    'cache_backend': 'Redis',
+                    'status': 'Connection Failed',
+                    'connection_test': 'Failed'
+                }
+        except (ConnectionError, TimeoutError, ValueError) as e:
             return {
                 'cache_backend': 'Redis',
-                'cache_location': getattr(settings, 'CACHES', {}).get('default', {}).get('LOCATION', 'Unknown'),
-                'status': 'Connected'
-            }
-        except:
-            return {
-                'cache_backend': 'Redis',
-                'status': 'Error'
+                'status': 'Error',
+                'error': str(e)
             }
 
 # Quick access functions
