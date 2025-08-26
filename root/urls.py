@@ -16,13 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from core import api_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', include('core.authentication.urls')),
+    path('api/auth/', include('core.auth.urls')),
     path('api/user/', include('core.user.urls')),
-    path('api/redis/', include('core.redis_demo.urls')),
-    path('api/hello/', api_views.hello_world, name='hello_world'),
-    path('api/status/', api_views.api_status, name='api_status'),
 ]

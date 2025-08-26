@@ -1,10 +1,10 @@
 from django.urls import path
-from . import views
+from core.auth import views
 
 urlpatterns = [
-    path('signin/', views.sign_in, name='sign_in'),
-    path('signup/', views.sign_up, name='sign_up'),
-    path('signout/', views.sign_out, name='sign_out'),
+    path('signin/', views.signin, name='signin'),
+    path('signup/', views.signup, name='signup'),
+    path('signout/', views.signout, name='signout'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('change-password/', views.change_password, name='change_password'),
 ]

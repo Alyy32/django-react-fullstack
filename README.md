@@ -71,7 +71,7 @@ graph TB
     
     subgraph "Backend Layer - Modular Apps"
         B
-        I[core.authentication - Auth Endpoints]
+        I[core.auth - Auth Endpoints]
         J[core.user - User Models Package]
         K[core.redis_demo - Cache Management]
         L[Django REST Framework]
@@ -312,7 +312,7 @@ wisecool_parent/                    # 🏠 Root Directory
 │
 ├── 🐍 Backend (Django) - Modular Architecture
 │   ├── core/                       # 📦 Main Application Package
-│   │   ├── authentication/         # 🔐 Authentication Module
+│   │   ├── auth/                   # 🔐 Authentication Module
 │   │   │   ├── views.py            # 🔑 Auth Endpoints (signin, signup, signout)
 │   │   │   ├── urls.py             # 🛣️ Auth URL Patterns
 │   │   │   └── apps.py             # ⚙️ Auth App Configuration
@@ -379,7 +379,7 @@ wisecool_parent/                    # 🏠 Root Directory
 
 | Directory | Purpose | Key Features | Technologies |
 |-----------|---------|-------------|-------------|
-| `core/authentication/` | User authentication and security | Signin, signup, password management | Django, DRF, JWT |
+| `core/auth/` | User authentication and security | Signin, signup, password management | Django, DRF, JWT |
 | `core/user/models/` | Modular user models package | Student, Parent, Instructor models | Django Models, Validation |
 | `core/user/` | User management and profiles | CRUD operations, relationships | Django, DRF |
 | `core/redis_demo/` | Caching and performance | Cache stats, demo endpoints | Redis, Django Cache |
@@ -403,7 +403,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'core.authentication',    # 🔐 Authentication endpoints
+    'core.auth',    # 🔐 Authentication endpoints
     'core.user',             # 👥 User management with models package
     'core.redis_demo',       # 🚀 Redis caching demonstrations
 ]

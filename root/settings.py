@@ -39,9 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'core.authentication',
+    'core.auth.apps.AuthConfig',
     'core.user',
-    'core.redis_demo',
 ]
 
 MIDDLEWARE = [
@@ -151,33 +150,20 @@ CORS_ALLOW_ALL_ORIGINS = True  # Only for development!
 # Disable automatic slash appending for API consistency
 APPEND_SLASH = False
 
-# Redis Configuration (with fallback to local memory for development)
-# CACHES = {
-#     'default': {
-#         # Try Redis first, fallback to locmem if Redis server not available
-#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-#         'LOCATION': 'unique-snowflake',
-#         'OPTIONS': {
-#             'MAX_ENTRIES': 1000,
-#             'CULL_FREQUENCY': 3,
-#         }
-#     }
-# }
-
-# Redis is now enabled
+# Cache Configuration (using local memory cache)
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
         'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'MAX_ENTRIES': 1000,
+            'CULL_FREQUENCY': 3,
         }
     }
 }
 
-# Session configuration with cache
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
+# Session configuration
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 # Cache time to live is 300 seconds (5 minutes)
 CACHE_TTL = 60 * 5
